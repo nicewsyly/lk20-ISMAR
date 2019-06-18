@@ -3,6 +3,12 @@
 #include "affine_fa.hpp"
 #include "affine_fc.hpp"
 #include "affine_ia.hpp"
+#include "affine_ic.hpp"
+#include "affine_ic_d.hpp"
+#include "affine_ic_lm.hpp"
+#include "affine_ic_nt.hpp"
+#include "affine_ic_nt_d.hpp"
+#include "affine_ic_sd.hpp"
 #include "tools.hpp"
 #include <iostream>
 #define DEBUG 1
@@ -15,7 +21,7 @@
 int main(int argc,char** argv)
 {
     P("main","./optflow videopath");
-    std::string videopath="../1.mov";//std::string(argv[1]);
+    std::string videopath=std::string(argv[1]);
     cv::VideoCapture video(videopath);
     if(!video.isOpened())
     {
@@ -27,16 +33,16 @@ int main(int argc,char** argv)
     video.read(templ_);
     std::vector<cv::Point2f> templ_contour;
     //utils.hpp get_contour
-    get_contour(templ_,templ_contour);
+    //get_contour(templ_,templ_contour);
     cv::cvtColor(templ_,templ_,cv::COLOR_BGR2GRAY);
     templ_.convertTo(templ_,CV_32FC1,1.,0.);
 
     //templ_contour={cv::Point2f(0,0),cv::Point2f(0,399),cv::Point2f(399,399),cv::Point2f(399,0)};
-    //cv::Rect templ_conrect=cv::Rect(73,242,400,300);   
-    cv::Rect templ_conrect=cv::boundingRect(templ_contour);   
+    cv::Rect templ_conrect=cv::Rect(653,517,400,400);//cv::Rect(73,242,400,300);   
+    
+    //cv::Rect templ_conrect=cv::boundingRect(templ_contour);   
     std::vector<cv::Point2f> templ_pts={cv::Point2f(0,0),cv::Point2f(templ_conrect.width-1,0),cv::Point2f(templ_conrect.width-1,templ_conrect.height-1),cv::Point2f(0,templ_conrect.height-1)};
     cv::Mat templ=templ_(templ_conrect).clone();
-    //cv::Matx23f p_init =cv::Matx23f(0,0,72.5,0,0,242.5); 
     cv::Matx23f p_init =cv::Matx23f(0,0,templ_conrect.x-1+0.5,0,0,templ_conrect.y-1+0.5); 
     cv::Mat frame;
     cv::VideoWriter vw("../result.avi",cv::VideoWriter::fourcc('M','J','P','G'),15.0,templ_.size());
@@ -45,10 +51,13 @@ int main(int argc,char** argv)
         std::cout<<"video writer file open failed"<<std::endl;
         return 0;
     }
-    for(unsigned int ci=0;ci<cnt;++ci)
+    int ci=0;
+    //for(unsigned int ci=0;ci<cnt;++ci)
+    while(video.read(frame)&&!frame.empty())
     {
+        ci++;
         std::cout<<"cnt" <<ci<<std::endl;
-        video.read(frame); 
+        //video.read(frame); 
         cv::Mat draw_img=frame.clone();
         cv::cvtColor(frame,frame,cv::COLOR_BGR2GRAY);
         frame.convertTo(frame,CV_32FC1,1.,0.); 

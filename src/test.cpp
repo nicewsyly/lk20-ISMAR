@@ -4,6 +4,12 @@
 #include "affine_fa.hpp"
 #include "affine_fc.hpp"
 #include "affine_ia.hpp"
+#include "affine_ic.hpp"
+#include "affine_ic_d.hpp"
+#include "affine_ic_lm.hpp"
+#include "affine_ic_nt.hpp"
+#include "affine_ic_nt_d.hpp"
+#include "affine_ic_sd.hpp"
 #include <iostream>
 #define DEBUG 1
 #if DEBUG
@@ -20,8 +26,6 @@ int main1(int argc,char** argv)
     cv::Mat img1=cv::imread("/home/parallels/images/easy/000.jpg");
     std::vector<cv::Point2f> templ_contour;
     cv::Rect templ_conrect(181,52,400,300);
-    cv::imshow("templ",img1(templ_conrect));
-    cv::waitKey();
     //get_contour(img1,templ_contour);
     //templ_contour={cv::Point2f(121, 35),cv::Point2f(516, 46),cv::Point2f(514, 305),cv::Point2f(129, 325)};
     cv::cvtColor(img1,img1,cv::COLOR_BGR2GRAY);
@@ -40,7 +44,7 @@ int main1(int argc,char** argv)
     img2.convertTo(img2,CV_32F,1.,0.);
     
     cv::Matx23f warp_p;
-    std::vector<fit> fita=affine_fa(img2,templ,p_init,50,0,warp_p,templ_pts);
+    std::vector<icdfit> fita=affine_ic_d(img2,templ,p_init,50,0,warp_p,templ_pts);
     for(int fi=0;fi<fita.size();++fi)
     {
         std::cout<<"warp_p "<<fita[fi].warp_p<<"error "<<fita[fi].rms_err<<std::endl;

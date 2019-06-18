@@ -27,20 +27,20 @@ std::vector<fit> affine_fa(const cv::Mat& img,const cv::Mat& templ,const cv::Mat
     //todo image gradient  dx ,dy    
     cv::Mat dx,dy;
     grad_a(aimg,dx,dy);
-    //std::cout<<"dx size "<<dx.size()<<std::endl;
-    //std::cout<<"dx "<<dx.row(0)<<std::endl;
-    //std::cout<<"dx "<<dx.row(dx.rows-1)<<std::endl;
     //todo evaluate jacobian
     cv::Mat dwdp=jacobian_a(width,height);
+
     std::vector<fit> fita(n_iters);
     const int np=6;
     for(int ni=0;ni<n_iters;++ni)
     {
         //todo warp_a
         cv::Mat Iwxp=warp_a(img,warp_p,templ_pts);
+        //todo calc error image
         cv::Mat err_img=templ-Iwxp;
+        
+        //todo store warp and rms error
         fita[ni].warp_p=warp_p;
-        //mean image val
         cv::Scalar mean_scalar=cv::mean(err_img.mul(err_img));
         float mean_s=mean_scalar.val[0];
         fita[ni].rms_err=std::sqrt(mean_s);
@@ -51,6 +51,7 @@ std::vector<fit> affine_fa(const cv::Mat& img,const cv::Mat& templ,const cv::Mat
         }
         cv::Mat nIx=warp_a(dx,warp_p,templ_pts);
         cv::Mat nIy=warp_a(dy,warp_p,templ_pts);
+
         //todo steest descent image
         cv::Mat vIdwdp=sd_images(dwdp,nIx,nIy,np,height,width);
         
@@ -60,17 +61,8 @@ std::vector<fit> affine_fa(const cv::Mat& img,const cv::Mat& templ,const cv::Mat
         cv::Mat sd_delta_p=sd_update(vIdwdp,err_img,np,width);
         cv::Mat delta_p=hess_inv*sd_delta_p;
         warp_p=update_step(warp_p,delta_p);
-        
-         
     }
     return fita;
-    //warp_p=cv::Matx<float,2,3>(p_init);
 }
-/*
-cv::Mat update_step(cv::Mat& warp_p,const cv::Mat& delta_p)
-{
-    delta_p.reshape(2);
-    warp_p+=delta_p;
-}
-*/
+
 #endif
