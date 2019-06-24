@@ -5,15 +5,17 @@
 #include "tools.hpp"
 
 cv::Matx<float,2,3> fcupdate_step(const cv::Matx<float,2,3>& warp_p,cv::Mat delta_p);
+/*
 typedef struct fitfc_
 {
     cv::Matx23f warp_p;
     float rms_err;
 }fitfc;
+*/
 
 //template 无法定义为返回值类型,因为无法推断,重载
 template<typename T,int M,int N>
-std::vector<fitfc> affine_fc(const cv::Mat& img,const cv::Mat& templ,const cv::Matx<float,2,3>& p_init,const int n_iters,const int step_size,cv::Matx<T,M,N>& warp_p,const std::vector<cv::Point2f>& templ_pts)
+std::vector<fit> affine_fc(const cv::Mat& img,const cv::Mat& templ,const cv::Matx<float,2,3>& p_init,const int n_iters,const int step_size,cv::Matx<T,M,N>& warp_p,const std::vector<cv::Point2f>& templ_pts)
 {
     cv::Mat aimg;
     if(img.channels()==1)
@@ -31,7 +33,7 @@ std::vector<fitfc> affine_fc(const cv::Mat& img,const cv::Mat& templ,const cv::M
     //std::cout<<"dx "<<dx.row(dx.rows-1)<<std::endl;
     //todo evaluate jacobian
     cv::Mat dwdp=jacobian_a(width,height);
-    std::vector<fitfc> fita(n_iters);
+    std::vector<fit> fita(n_iters);
     const int np=6;
     for(int ni=0;ni<n_iters;++ni)
     {

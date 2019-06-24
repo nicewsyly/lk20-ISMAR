@@ -9,19 +9,20 @@
 #include "affine_ic_nt.hpp"
 #include "affine_ic_nt_d.hpp"
 #include "affine_ic_sd.hpp"
+#include "ismar.hpp"
 #include "tools.hpp"
 #include <iostream>
-#define DEBUG 1
+#define DEBUG 0
 #if DEBUG
     #define P(S,T) std::cout<<S<<T<<std::endl;
 #else
     #define P(S,T) 
 #endif
 
-int main(int argc,char** argv)
+int main1(int argc,char** argv)
 {
     P("main","./optflow videopath");
-    std::string videopath=std::string(argv[1]);
+    std::string videopath="../1.mov";//std::string(argv[1]);
     cv::VideoCapture video(videopath);
     if(!video.isOpened())
     {
@@ -33,17 +34,24 @@ int main(int argc,char** argv)
     video.read(templ_);
     std::vector<cv::Point2f> templ_contour;
     //utils.hpp get_contour
-    //get_contour(templ_,templ_contour);
-    cv::cvtColor(templ_,templ_,cv::COLOR_BGR2GRAY);
-    templ_.convertTo(templ_,CV_32FC1,1.,0.);
+    //get_contour(templ,templ_contour);
+    //cv::cvtColor(templ_,templ_,cv::COLOR_BGR2GRAY);
+    //templ_.convertTo(templ_,CV_32FC1,1.,0.);
 
-    //templ_contour={cv::Point2f(0,0),cv::Point2f(0,399),cv::Point2f(399,399),cv::Point2f(399,0)};
-    cv::Rect templ_conrect=cv::Rect(653,517,400,400);//cv::Rect(73,242,400,300);   
-    
-    //cv::Rect templ_conrect=cv::boundingRect(templ_contour);   
-    std::vector<cv::Point2f> templ_pts={cv::Point2f(0,0),cv::Point2f(templ_conrect.width-1,0),cv::Point2f(templ_conrect.width-1,templ_conrect.height-1),cv::Point2f(0,templ_conrect.height-1)};
+    /*
+    templ_contour={cv::Point2f(0,0),
+                     cv::Point2f(0,399),
+                     cv::Point2f(399,399),
+                     cv::Point2f(399,0)};
+    */
+    cv::Rect templ_conrect=cv::Rect(73,242,100,100);   
+    std::vector<cv::Point2f> templ_pts={cv::Point2f(templ_conrect.x,templ_conrect.y),
+                                        cv::Point2f(templ_conrect.x+templ_conrect.width,templ_conrect.y),
+                                        cv::Point2f(templ_conrect.x+templ_conrect.width,templ_conrect.y+templ_conrect.height),
+                                        cv::Point2f(templ_conrect.x,templ_conrect.y+templ_conrect.height)};
     cv::Mat templ=templ_(templ_conrect).clone();
-    cv::Matx23f p_init =cv::Matx23f(0,0,templ_conrect.x-1+0.5,0,0,templ_conrect.y-1+0.5); 
+    //cv::Rect templ_conrect=cv::boundingRect(templ_contour);   
+    //cv::Matx23f p_init =cv::Matx23f(0,0,72.5,0,0,242.5); 
     cv::Mat frame;
     cv::VideoWriter vw("../result.avi",cv::VideoWriter::fourcc('M','J','P','G'),15.0,templ_.size());
     if(!vw.isOpened())
@@ -51,21 +59,25 @@ int main(int argc,char** argv)
         std::cout<<"video writer file open failed"<<std::endl;
         return 0;
     }
-    int ci=0;
-    //for(unsigned int ci=0;ci<cnt;++ci)
-    while(video.read(frame)&&!frame.empty())
+    cv::Matx23f p_init=(cv::Matx23f(0,0,0,0,0,0));
+    p_init(0,2)=-0.5;//conrect.x-1+0.5;
+    p_init(1,2)=-0.5;//conrect.y-1+0.5;
+
+
+    for(unsigned int ci=0;ci<cnt;++ci)
     {
-        ci++;
         std::cout<<"cnt" <<ci<<std::endl;
-        //video.read(frame); 
+        video.read(frame); 
         cv::Mat draw_img=frame.clone();
-        cv::cvtColor(frame,frame,cv::COLOR_BGR2GRAY);
-        frame.convertTo(frame,CV_32FC1,1.,0.); 
+        //cv::cvtColor(frame,frame,cv::COLOR_BGR2GRAY);
+        //frame.convertTo(frame,CV_32FC1,1.,0.); 
         //todo: affine_fa
         cv::Matx<float,2,3> warp_p;
-        affine_fa(frame,templ,p_init,50,0,warp_p,templ_pts);
-        p_init=warp_p;
-        //std::cout<<ci<<" warp_p "<<warp_p<<std::endl;
+        //std::vector<fit> fita=affine_fa(frame,templ,p_init,50,0,warp_p,templ_pts);
+        std::vector<fit> fita=ismar(templ_,frame,templ_pts,p_init);
+        //p_init=warp_p;
+        p_init=fita[fita.size()-1].warp_p;
+        std::cout<<ci<<" warp_p "<<p_init<<std::endl;
         cv::Matx33f M;
         cv::vconcat(p_init,cv::Matx13f(0,0,1),M);
         M(0,0)+=1;
@@ -81,7 +93,7 @@ int main(int argc,char** argv)
         P("curr_conmat ",curr_conmat);
         mat2pts(curr_conmat,curr_contour);
         std::vector<cv::Point> draw_contour(curr_contour.begin(),curr_contour.end());
-        cv::polylines(draw_img,draw_contour,true,cv::Scalar(0,0,255),4);
+        cv::polylines(draw_img,draw_contour,true,cv::Scalar(0,0,255));
         vw.write(draw_img);
         cv::imshow("frame",draw_img);
         cv::waitKey(10);

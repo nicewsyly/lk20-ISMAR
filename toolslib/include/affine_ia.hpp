@@ -5,15 +5,17 @@
 #include "tools.hpp"
 
 cv::Matx<float,2,3> iaupdate_step(const cv::Matx<float,2,3>& warp_p,cv::Mat delta_p_star);
+/*
 typedef struct iafit_
 {
     cv::Matx23f warp_p;
     float rms_err;
 }iafit;
+*/
 
 //template 无法定义为返回值类型,因为无法推断,重载
 template<typename T,int M,int N>
-std::vector<iafit> affine_ia(const cv::Mat& img,const cv::Mat& templ,const cv::Matx<float,2,3>& p_init,const int n_iters,const int step_size,cv::Matx<T,M,N>& warp_p,const std::vector<cv::Point2f>& templ_pts)
+std::vector<fit> affine_ia(const cv::Mat& img,const cv::Mat& templ,const cv::Matx<float,2,3>& p_init,const int n_iters,const int step_size,cv::Matx<T,M,N>& warp_p,const std::vector<cv::Point2f>& templ_pts)
 {
     cv::Mat aimg;
     if(img.channels()==1)
@@ -36,7 +38,7 @@ std::vector<iafit> affine_ia(const cv::Mat& img,const cv::Mat& templ,const cv::M
     cv::Mat vT_Gamma_x=sd_images(Gamma_x,nTx,nTy,np,height,width);
     cv::Mat H_star=hessian_a(vT_Gamma_x,np,width);
     cv::Mat H_star_inv=H_star.inv();
-    std::vector<iafit> fita(n_iters);
+    std::vector<fit> fita(n_iters);
     for(int ni=0;ni<n_iters;++ni)
     {
         //todo warp_a

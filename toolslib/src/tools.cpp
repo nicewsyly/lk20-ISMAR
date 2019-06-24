@@ -44,7 +44,8 @@ cv::Mat jacobian_a(const int width,const int height)
     vconcat(dwdp,dwdpdown,dwdp);
     return dwdp;
 }
-cv::Mat warp_a(const cv::Mat& img,const cv::Matx23f& warp_p,const std::vector<cv::Point2f>& templt_pts)
+cv::Mat warp_a(const cv::Mat& img,const cv::Matx23f& warp_p,
+               const std::vector<cv::Point2f>& templt_pts)
 {
     cv::Matx13f tmp={0,0,1};
     cv::Matx33f M;
@@ -68,7 +69,8 @@ void meshgrid(const int width,const int height,cv::Mat& outx,cv::Mat& outy)
     cv::repeat(cv::Mat(x).t(),y.size(),1,outx);
     cv::repeat(cv::Mat(y),1,x.size(),outy);
 }
-cv::Mat quadtobox(const cv::Mat& img,const std::vector<cv::Point2f>& pts,const cv::Matx33f& M,const std::string& ftype)
+cv::Mat quadtobox(const cv::Mat& img,const std::vector<cv::Point2f>& pts,
+                  const cv::Matx33f& M,const std::string& ftype)
 {
     //get min x and min y max x max y
     float min_x=pts[0].x,max_x=pts[0].x,min_y=pts[0].y,max_y=pts[0].y;
@@ -99,7 +101,8 @@ cv::Mat quadtobox(const cv::Mat& img,const std::vector<cv::Point2f>& pts,const c
     cv::remap(img,wimg,xi,yi,cv::INTER_LINEAR);
     return wimg;
 }
-cv::Mat sd_images(const cv::Mat& dwdp,const cv::Mat& nIx,const cv::Mat& nIy,const int np,const int h,const int w)
+cv::Mat sd_images(const cv::Mat& dwdp,const cv::Mat& nIx,const cv::Mat& nIy,
+                  const int np,const int h,const int w)
 {
     cv::Mat vIdwdp(cv::Size(np*w,h),CV_32F);
     for(int ni=0;ni<np;++ni)
@@ -124,7 +127,8 @@ cv::Mat hessian_a(const cv::Mat& vIdwdp,const int np,const int w)
     }
     return hess;
 }
-cv::Mat sd_update(const cv::Mat& vIdwdp,const cv::Mat& err_img,const int np,const int w)
+cv::Mat sd_update(const cv::Mat& vIdwdp,const cv::Mat& err_img,const int np,
+                  const int w)
 {
     cv::Mat sd_delta_p=cv::Mat::zeros(cv::Size(1,np),CV_32F);
     for(int ni=0;ni<np;++ni)

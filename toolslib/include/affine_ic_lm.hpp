@@ -5,15 +5,17 @@
 #include "tools.hpp"
 
 cv::Matx<float,2,3> iclmupdate_step(const cv::Matx<float,2,3>& warp_p,cv::Mat delta_p);
+/*
 typedef struct iclmfit_
 {
     cv::Matx23f warp_p;
     float rms_err;
 }iclmfit;
+*/
 
 //template 无法定义为返回值类型,因为无法推断,重载
 template<typename T,int M,int N>
-std::vector<iclmfit> affine_ic_lm(const cv::Mat& img,const cv::Mat& templ,const cv::Matx<float,2,3>& p_init,const int n_iters,const int step_size,cv::Matx<T,M,N>& warp_p,const std::vector<cv::Point2f>& templ_pts)
+std::vector<fit> affine_ic_lm(const cv::Mat& img,const cv::Mat& templ,const cv::Matx<float,2,3>& p_init,const int n_iters,const int step_size,cv::Matx<T,M,N>& warp_p,const std::vector<cv::Point2f>& templ_pts)
 {
     cv::Mat aimg;
     if(img.channels()==1)
@@ -55,7 +57,7 @@ std::vector<iclmfit> affine_ic_lm(const cv::Mat& img,const cv::Mat& templ,const 
 	LM.at<float>(i,i)=cv::sum(h1.mul(h1)).val[0];
     }
      
-    std::vector<iclmfit> fita(n_iters);
+    std::vector<fit> fita(n_iters);
     int ni=0;
     fita[ni].warp_p=warp_p;
     fita[ni].rms_err=e;
